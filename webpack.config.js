@@ -18,8 +18,9 @@ const config = {
     },
     devtool: 'source-map',
     output: {
-        path: path.join(__dirname, 'lib'),
-        filename: isProd ? '[name].min.js' : '[name].js',
+        path: path.join(__dirname, 'public'),
+        // filename: isProd ? '[name].min.js' : '[name].js',
+        filename: '[name].js',
         library: libraryName,
         libraryTarget: 'umd',
         umdNamedDefine: true,

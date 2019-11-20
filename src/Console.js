@@ -126,7 +126,7 @@ class Console extends Component {
         } else {
             terminal = this.interactiveTerminal(this.props)
         }
-
+        const wStyle = windowStyle(theme)
         return (
             <ThemeContext.Provider value={theme}>
                 <Rnd
@@ -138,17 +138,18 @@ class Console extends Component {
                         height: 400,
                     }}
                 >
-                    <div style={generalContainerStyle}>
-                        <div className="draghandle" style={windowStyle.titlebar}>
-                            <div className="buttons" style={windowStyle.buttons}>
-                                <div className="close" style={windowStyle.close}></div>
-                                <div className="minimize" style={windowStyle.minimize}></div>
-                                <div className="zoom" style={windowStyle.zoom}></div>
+                    <div style={generalContainerStyle(theme)}>
+                        <div className="draghandle" style={wStyle.titlebar}>
+                            <div style={wStyle.buttons}>
+                                <div style={wStyle.close}> </div>
+                                <div style={wStyle.minimize}> </div>
+                                <div style={wStyle.zoom}> </div>
                             </div>
                             Terminator
                         </div>
                         <div
                             style={terminalContainerStyle(theme)}
+                            className={theme.scrollbarClass}
                             ref={(ref) => {
                                 this.containerRef = ref;
                             }}
@@ -182,24 +183,25 @@ Console.defaultProps = {
 
 export default Console;
 
-const generalContainerStyle = {
-    borderRadius: "6px",
-    border: "1px solid #acacac",
+const generalContainerStyle = theme => ({
+    borderRadius: theme.borderRadius,
+    border: theme.border,
     height: "100%",
-}
+})
 
 const terminalContainerStyle = theme => ({
     boxSizing: "border-box",
-    height: "calc(100% - 22px)",
+    height: "calc(100% - 24px)",
     lineHeight: "1.2em",
     padding: theme.spacing,
     overflowY: "scroll",
+    outline: "none",
     color: theme.outputColor,
     background: theme.background,
     fontFamily: "monospace",
     fontSize: theme.fontSize,
-    borderBottomRightRadius: "6px",
-    borderBottomLeftRadius: "6px",
+    borderBottomRightRadius: theme.borderRadius,
+    borderBottomLeftRadius: theme.borderRadius,
 })
 
 const anchorStyle = {
@@ -207,20 +209,20 @@ const anchorStyle = {
     height: "1px",
 }
 
-const windowStyle = {
+const windowStyle = theme => ({
     titlebar: {
         cursor: "move",
-        fontFamily: "monospace",
-        background: "linear-gradient(0deg, #ebebeb, #d5d5d5)",
-        color: "#4d494d",
+        fontFamily: theme.fontFamily,
+        background: theme.titleBarBackground,
+        color: theme.titleBarColor,
         fontSize: "11pt",
-        lineHeight: "20px",
+        lineHeight: "24px",
         textAlign: "center",
-        height: "20px",
-        borderTop: "1px solid #f3f1f3",
-        borderBottom: "1px solid #b1aeb1",
-        borderTopLeftRadius: "6px",
-        borderTopRightRadius: "6px",
+        height: "24px",
+        borderTop: theme.titleBarBorderTop,
+        borderBottom: theme.titleBarBorderBottom,
+        borderTopLeftRadius: theme.borderRadius,
+        borderTopRightRadius: theme.borderRadius,
         userSelect: "none",
         WebkitUserSelect: "none",
         MozUserSelect: "none",
@@ -229,7 +231,7 @@ const windowStyle = {
     },
     buttons: {
         paddingLeft: "8px",
-        paddingTop: "3px",
+        paddingTop: "6px",
         float: "left",
         lineHeight: "0px"
     },
@@ -267,4 +269,4 @@ const windowStyle = {
         display: "inline-block",
         cursor: "default",
     },
-}
+})

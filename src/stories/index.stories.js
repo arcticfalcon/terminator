@@ -1,7 +1,7 @@
 import React, {Fragment} from 'react';
 import Console from "../Console";
 import Terminator from '../Terminator'
-import defaultTheme from 'theme'
+import defaultTheme, {coal} from 'theme'
 
 export default {title: 'Terminator'};
 
@@ -102,9 +102,9 @@ const ssh = <Fragment><span style={{color: "#00FF00"}}>root@13.31.123.144</span>
 
 defaultTheme.promptSymbol = ssh
 
-export const defaultConfig = () => <Console terminator={new Terminator(commands)} theme={defaultTheme}/>;
+export const defaultConfig = () => <Console terminator={new Terminator(commands)} theme={coal}/>;
 export const multiple = () => <div>
-    <Console terminator={new Terminator(commands)}/>
+    <Console terminator={new Terminator(commands)} theme={coal}/>
     <Console terminator={new Terminator(commands)}/>
 </div>;
 

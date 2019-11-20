@@ -4,7 +4,8 @@
   "description": "",
   "main": "",
   "scripts": {
-    "build": "webpack --mode development && webpack --mode production",
+    "build-dev": "webpack --mode development",
+    "build": "webpack --mode production",
     "dev": "webpack --progress --colors --watch --mode development",
     "test": "cross-env NODE_PATH=./src mocha --require @babel/register --colors './test/**/*.spec.js'",
     "test:min": "yarn run test --reporter min",
@@ -43,6 +44,7 @@
     "yargs": "^13.2.4"
   },
   "dependencies": {
+    "express": "^4.17.1",
     "mobx": "^5.14.2",
     "mobx-react": "^6.1.4",
     "prop-types": "^15.7.2",
