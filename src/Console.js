@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, {Component, Fragment} from 'react';
+import ReactDOM from 'react-dom'
 import {observer} from 'mobx-react'
 import {reaction} from "mobx";
 import {Rnd} from "react-rnd";
@@ -16,6 +17,13 @@ class Console extends Component {
 
         this.inputRef = null;
         this.containerRef = null;
+
+        this.state = {
+            minimized: false,
+            zoomed: false,
+            width: 600,
+            height: 400
+        }
 
         // Scroll to bottom when new lines are added
         reaction(
@@ -47,6 +55,28 @@ class Console extends Component {
         }
     }
 
+    onResize = (a,b,c,delta) => {
+        this.setState({
+            width: this.state.width + delta.width,
+            height: this.state.height + delta.height,
+        })
+    }
+    zoom = () => {
+        this.setState({
+            zoomed: !this.state.zoomed,
+            minimized: false,
+        })
+    }
+    minMax = () => {
+        this.setState({
+            minimized: !this.state.minimized,
+            zoomed: this.state.minimized ? this.state.zoomed : false,
+        })
+    }
+    close = () => {
+        ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this).parentNode)
+    }
+
     _onKeyDown = e => {
         // Execute
         if (e.key === "Enter") {
@@ -68,11 +98,19 @@ class Console extends Component {
             this.props.terminator.abort()
             return
         }
-
         // ArrowUp
-
+        if (e.key === 'ArrowUp') {
+            e.preventDefault()
+            this.props.terminator.historyUp()
+            return
+        }
         // ArrowDown
-
+        if (e.key === 'ArrowDown') {
+            e.preventDefault()
+            this.props.terminator.historyDown()
+            return
+        }
+        // Modifiers
         if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
             return
         }
@@ -118,7 +156,8 @@ class Console extends Component {
     }
 
     render() {
-        const {terminator, theme} = this.props;
+        const {terminator, theme} = this.props
+        const {width, height, minimized, zoomed} = this.state
 
         let terminal
         if (terminator.fullScreenMode) {
@@ -126,29 +165,35 @@ class Console extends Component {
         } else {
             terminal = this.interactiveTerminal(this.props)
         }
-        const wStyle = windowStyle(theme)
+        const wStyle = windowStyle(theme, zoomed)
+
         return (
             <ThemeContext.Provider value={theme}>
                 <Rnd
+                    bounds={"window"}
+                    enableResizing={minimized || zoomed ? {} : undefined}
+                    disableDragging={zoomed}
+                    onResizeStop={this.onResize}
                     dragHandleClassName={"draghandle"}
-                    default={{
-                        x: 0,
-                        y: 0,
-                        width: 600,
-                        height: 400,
+                    minHeight={150}
+                    minWidth={200}
+                    size={{
+                        width: minimized ? "auto" : zoomed ? "95%" : width,
+                        height: minimized ? "auto" : zoomed ? "95%" : height,
                     }}
+                    position={zoomed ? { x: 0, y: 0 } : undefined}
                 >
                     <div style={generalContainerStyle(theme)}>
                         <div className="draghandle" style={wStyle.titlebar}>
                             <div style={wStyle.buttons}>
-                                <div style={wStyle.close}> </div>
-                                <div style={wStyle.minimize}> </div>
-                                <div style={wStyle.zoom}> </div>
+                                <div style={wStyle.close} onClick={this.close}></div>
+                                <div style={wStyle.minimize} onClick={this.minMax}></div>
+                                <div style={wStyle.zoom} onClick={this.zoom}></div>
                             </div>
-                            Terminator
+                            <span style={{margin: "0 15px"}}>Terminator</span>
                         </div>
                         <div
-                            style={terminalContainerStyle(theme)}
+                            style={terminalContainerStyle(theme, !minimized)}
                             className={theme.scrollbarClass}
                             ref={(ref) => {
                                 this.containerRef = ref;
@@ -160,6 +205,7 @@ class Console extends Component {
                         </div>
                     </div>
                 </Rnd>
+
             </ThemeContext.Provider>
         );
     }
@@ -189,7 +235,8 @@ const generalContainerStyle = theme => ({
     height: "100%",
 })
 
-const terminalContainerStyle = theme => ({
+const terminalContainerStyle = (theme, display) => ({
+    display: display ? "block" : "none",
     boxSizing: "border-box",
     height: "calc(100% - 24px)",
     lineHeight: "1.2em",
@@ -209,9 +256,9 @@ const anchorStyle = {
     height: "1px",
 }
 
-const windowStyle = theme => ({
+const windowStyle = (theme, locked) => ({
     titlebar: {
-        cursor: "move",
+        cursor: locked ? "default" : "move",
         fontFamily: theme.fontFamily,
         background: theme.titleBarBackground,
         color: theme.titleBarColor,
@@ -243,7 +290,7 @@ const windowStyle = theme => ({
         border: "1px solid #e33e41",
         borderRadius: "50%",
         display: "inline-block",
-        cursor: "default",
+        cursor: "pointer",
     },
     minimize: {
         background: "#ffbd4c",
@@ -255,7 +302,7 @@ const windowStyle = theme => ({
         border: "1px solid #e09e3e",
         borderRadius: "50%",
         display: "inline-block",
-        cursor: "default",
+        cursor: "pointer",
     },
     zoom: {
         background: "#00ca56",
@@ -267,6 +314,6 @@ const windowStyle = theme => ({
         border: "1px solid #14ae46",
         borderRadius: "50%",
         display: "inline-block",
-        cursor: "default",
+        cursor: "pointer",
     },
 })
