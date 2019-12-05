@@ -35,7 +35,11 @@ const config = {
             use: {
                 loader: 'babel-loader'
             }
-        }]
+        },
+        {
+            test: /\.css$/i,
+            use: ['style-loader', 'css-loader'],
+        },]
     },
     resolve: {
         modules: [path.resolve('./node_modules'), path.resolve('./src')],
