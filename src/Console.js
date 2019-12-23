@@ -1,22 +1,13 @@
 import PropTypes from 'prop-types';
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
 import ReactDOM from 'react-dom'
-import {observer} from 'mobx-react'
-import {reaction} from "mobx";
 import {Rnd} from "react-rnd";
-import CommandInput from 'components/CommandInput';
-import OutputList from 'components/OutputList';
-import defaultTheme, {ThemeContext} from 'theme'
+import defaultTheme from 'theme'
 import Terminator from "Terminator";
-import {ResultOutput} from "components/OutputList";
 
-@observer
 class Console extends Component {
     constructor(props) {
         super(props);
-
-        this.inputRef = null;
-        this.containerRef = null;
 
         this.state = {
             minimized: false,
@@ -24,35 +15,9 @@ class Console extends Component {
             width: 600,
             height: 400
         }
-
-        // Scroll to bottom when new lines are added
-        reaction(
-            () => props.terminator.items.length,
-            () => {
-                this.scrollOutput()
-            }
-        )
     }
-
-    focus() {
-        if (this.inputRef) {
-            this.inputRef.focus();
-        }
-    }
-
-    scrollOutput() {
-        this.containerRef.scrollTop = this.containerRef.scrollHeight;
-    }
-
-    componentDidUpdate() {
-        const {autoFocus} = this.props;
-
-        this.scrollOutput();
-
-        if (autoFocus) {
-            this.containerRef.focus()
-            this.focus();
-        }
+    componentDidMount() {
+        this.props.terminator.attach(this.container)
     }
 
     onResize = (a,b,c,delta) => {
@@ -77,103 +42,27 @@ class Console extends Component {
         ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this).parentNode)
     }
 
-    _onKeyDown = e => {
-        // Execute
-        if (e.key === "Enter") {
-            this.props.terminator.execute(this.props.terminator.input)
-            return
+    componentDidUpdate() {
+        if(!this.state.minimized) {
+            this.props.terminator.fitAddon.fit()
+            this.container.scrollTop = this.container.scrollHeight;
         }
-
-        // Autocomplete:
-        if (e.key === "Tab") {
-            e.preventDefault()
-            //ToDo Execute internal command?
-            this.props.terminator.autocomplete()
-
-            return
-        }
-
-        // Abort
-        if (e.key === 'Escape' || (e.key === 'c' && e.ctrlKey)) {
-            this.props.terminator.abort()
-            return
-        }
-        // ArrowUp
-        if (e.key === 'ArrowUp') {
-            e.preventDefault()
-            this.props.terminator.historyUp()
-            return
-        }
-        // ArrowDown
-        if (e.key === 'ArrowDown') {
-            e.preventDefault()
-            this.props.terminator.historyDown()
-            return
-        }
-        // Modifiers
-        if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
-            return
-        }
-
-        this.focus()
-    }
-
-    interactiveTerminal(props) {
-        const {
-            terminator, readonly, autoFocus, terminalId
-        } = props;
-        let inputControl;
-        if (!readonly) {
-            inputControl = (
-                <CommandInput
-                    ref={(ref) => {
-                        this.inputRef = ref;
-                    }}
-                    autoFocus={autoFocus}
-                    showPromptSymbol={!terminator.executing}
-                    value={terminator.input}
-                    onChange={(e) => terminator.setInput(e.target.value)}
-                />
-            );
-        }
-
-        return (
-            <Fragment>
-                <OutputList
-                    terminalId={terminalId}
-                    outputs={terminator.items}
-                />
-                {inputControl}
-                <div style={anchorStyle}/>
-            </Fragment>
-        )
-    }
-
-    fullScreenTerminal(props) {
-        return (
-            <ResultOutput content={props.terminator.fullScreenContent}/>
-        )
     }
 
     render() {
         const {terminator, theme} = this.props
         const {width, height, minimized, zoomed} = this.state
-
-        let terminal
-        if (terminator.fullScreenMode) {
-            terminal = this.fullScreenTerminal(this.props)
-        } else {
-            terminal = this.interactiveTerminal(this.props)
-        }
         const wStyle = windowStyle(theme, zoomed)
 
         return (
-            <ThemeContext.Provider value={theme}>
                 <Rnd
                     bounds={"window"}
                     enableResizing={minimized || zoomed ? {} : undefined}
                     disableDragging={zoomed}
                     onResizeStop={this.onResize}
+                    onResize={(e, direction, ref, delta, position) => {
+                        this.props.terminator.fitAddon.fit()
+                    }}
                     dragHandleClassName={"draghandle"}
                     minHeight={150}
                     minWidth={200}
@@ -192,38 +81,22 @@ class Console extends Component {
                             </div>
                             <span style={{margin: "0 15px"}}>Terminator</span>
                         </div>
-                        <div
-                            style={terminalContainerStyle(theme, !minimized)}
-                            className={theme.scrollbarClass}
-                            ref={(ref) => {
-                                this.containerRef = ref;
-                            }}
-                            onKeyDown={this._onKeyDown}
-                            tabIndex={0}
-                        >
-                            {terminal}
-                        </div>
+                        <div style={terminalContainerStyle(theme, !minimized)}
+                             ref={ref => (this.container = ref)} />
+                        <div style={anchorStyle}/>
                     </div>
                 </Rnd>
-
-            </ThemeContext.Provider>
         );
     }
 };
 
 
 Console.propTypes = {
-    readonly: PropTypes.bool,
-    autoFocus: PropTypes.bool,
-    terminalId: PropTypes.string,
     theme: PropTypes.object,
     terminator: PropTypes.instanceOf(Terminator).isRequired,
 };
 
 Console.defaultProps = {
-    readonly: false,
-    autoFocus: true,
-    terminalId: 'terminal01',
     theme: defaultTheme,
 };
 
@@ -239,14 +112,9 @@ const terminalContainerStyle = (theme, display) => ({
     display: display ? "block" : "none",
     boxSizing: "border-box",
     height: "calc(100% - 24px)",
-    lineHeight: "1.2em",
-    padding: theme.spacing,
-    overflowY: "scroll",
+    padding: "0 0 0 6px",
     outline: "none",
-    color: theme.outputColor,
     background: theme.background,
-    fontFamily: "monospace",
-    fontSize: theme.fontSize,
     borderBottomRightRadius: theme.borderRadius,
     borderBottomLeftRadius: theme.borderRadius,
 })

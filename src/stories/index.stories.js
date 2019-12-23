@@ -11,18 +11,18 @@ const commands = [
         "description": "list folder",
         "handler": (params, terminator) => {
             setTimeout(() => {
-                terminator.addResult("drwxr-xr-x 1 Juan 197121    0 Oct 26 17:35 ./\n" +
-                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 09:38 ../\n" +
-                    "-rw-r--r-- 1 Juan 197121  297 Oct 26 17:39 .babelrc\n" +
-                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 10:17 .idea/\n" +
-                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 17:43 .storybook/\n" +
-                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 17:37 node_modules/\n" +
-                    "-rw-r--r-- 1 Juan 197121 1.7K Oct 26 17:35 package.json\n" +
-                    "-rw-r--r-- 1 Juan 197121  13K Oct 26 17:35 package-lock.json\n" +
-                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 15:14 src/\n" +
-                    "-rw-r--r-- 1 Juan 197121 1.2K Oct 26 10:14 webpack.config.js\n" +
-                    "-rw-r--r-- 1 Juan 197121 392K Oct 26 17:36 yarn.lock\n" +
-                    "-rw-r--r-- 1 Juan 197121 2.8K Oct 26 09:43 yarn-error.log\n")
+                terminator.addResult("drwxr-xr-x 1 Juan 197121    0 Oct 26 17:35 ./\n\r" +
+                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 09:38 ../\n\r" +
+                    "-rw-r--r-- 1 Juan 197121  297 Oct 26 17:39 .babelrc\n\r" +
+                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 10:17 .idea/\n\r" +
+                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 17:43 .storybook/\n\r" +
+                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 17:37 node_modules/\n\r" +
+                    "-rw-r--r-- 1 Juan 197121 1.7K Oct 26 17:35 package.json\n\r" +
+                    "-rw-r--r-- 1 Juan 197121  13K Oct 26 17:35 package-lock.json\n\r" +
+                    "drwxr-xr-x 1 Juan 197121    0 Oct 26 15:14 src/\n\r" +
+                    "-rw-r--r-- 1 Juan 197121 1.2K Oct 26 10:14 webpack.config.js\n\r" +
+                    "-rw-r--r-- 1 Juan 197121 392K Oct 26 17:36 yarn.lock\n\r" +
+                    "-rw-r--r-- 1 Juan 197121 2.8K Oct 26 09:43 yarn-error.log\n\r")
                 terminator.done()
             }, 2000)
         }
@@ -98,13 +98,10 @@ const commands = [
     }
 ]
 
-const ssh = <Fragment><span style={{color: "#00FF00"}}>root@13.31.123.144</span> $</Fragment>
 
-defaultTheme.promptSymbol = ssh
-
-export const defaultConfig = () => <Console terminator={new Terminator(commands)} theme={coal}/>;
+export const defaultConfig = () => <Console terminator={new Terminator(commands, 'root@13.31.123.144 ~ $ ', coal)} theme={coal}/>;
 export const multiple = () => <div>
-    <Console terminator={new Terminator(commands)} theme={coal}/>
-    <Console terminator={new Terminator(commands)}/>
+    <Console terminator={new Terminator(commands, 'root@13.31.123.144 ~ $ ', coal)} theme={coal}/>
+    <Console terminator={new Terminator(commands, 'root@13.31.123.144 ~ $ ', defaultTheme)}/>
 </div>;
 
