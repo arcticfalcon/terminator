@@ -45,7 +45,7 @@
     "yargs": "^13.2.4"
   },
   "dependencies": {
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "express": "^4.17.1",
     "prop-types": "^15.7.2",
     "react-rnd": "^10.1.1",
